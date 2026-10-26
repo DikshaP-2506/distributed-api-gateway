@@ -1,0 +1,27 @@
+{
+  "name": "@gateway/backend-service",
+  "version": "1.0.0",
+  "description": "Independent backend service instance for Distributed API Gateway",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "start:s1": "cross-env SERVER_ID=server-1 PORT=3001 node --import=tsx src/server.ts",
+    "start:s2": "cross-env SERVER_ID=server-2 PORT=3002 node --import=tsx src/server.ts",
+    "start:s3": "cross-env SERVER_ID=server-3 PORT=3003 node --import=tsx src/server.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.4",
+    "cross-env": "^7.0.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}

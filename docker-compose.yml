@@ -1,0 +1,116 @@
+services:
+  # Independent Backend Service 1
+  server-1:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: gateway-server-1
+    environment:
+      - SERVER_ID=server-1
+      - PORT=3001
+      - VERSION=1.0.0
+      - NODE_ENV=production
+    networks:
+      - gateway-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+  # Independent Backend Service 2
+  server-2:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: gateway-server-2
+    environment:
+      - SERVER_ID=server-2
+      - PORT=3002
+      - VERSION=1.0.0
+      - NODE_ENV=production
+    networks:
+      - gateway-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+  # Independent Backend Service 3
+  server-3:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: gateway-server-3
+    environment:
+      - SERVER_ID=server-3
+      - PORT=3003
+      - VERSION=1.0.0
+      - NODE_ENV=production
+    networks:
+      - gateway-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3003/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+  # API Gateway
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: distributed-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - GATEWAY_PORT=8080
+      - DEFAULT_ALGORITHM=round-robin
+      - BACKEND_SERVERS=http://server-1:3001,http://server-2:3002,http://server-3:3003
+      - DATABASE_PATH=/app/data/gateway.sqlite
+      - HEALTH_CHECK_INTERVAL_MS=2000
+      - HEALTH_CHECK_TIMEOUT_MS=1000
+      - UNHEALTHY_THRESHOLD=3
+      - RECOVERY_THRESHOLD=2
+      - NODE_ENV=production
+    volumes:
+      - gateway-data:/app/data
+    networks:
+      - gateway-network
+    depends_on:
+      server-1:
+        condition: service_healthy
+      server-2:
+        condition: service_healthy
+      server-3:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # React Frontend Dashboard
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gateway-frontend
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_GATEWAY_URL=http://localhost:8080
+    networks:
+      - gateway-network
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+networks:
+  gateway-network:
+    name: distributed-gateway-net
+    driver: bridge
+
+volumes:
+  gateway-data:
+    name: gateway-sqlite-data

@@ -1,0 +1,30 @@
+{
+  "name": "distributed-api-gateway-monorepo",
+  "version": "1.0.0",
+  "description": "Distributed API Gateway with Intelligent Load Balancing and Fault Tolerance",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "gateway",
+    "services/backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=services/backend && npm run build --workspace=gateway && npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=services/backend",
+    "build:gateway": "npm run build --workspace=gateway",
+    "build:frontend": "npm run build --workspace=frontend",
+    "test": "npm run test --workspace=gateway",
+    "test:unit": "npm run test:unit --workspace=gateway",
+    "test:integration": "npm run test:integration --workspace=gateway",
+    "start:all": "node scripts/start-all.js",
+    "start:gateway": "node gateway/dist/server.js",
+    "start:server-1": "node scripts/start-service.js 1",
+    "start:server-2": "node scripts/start-service.js 2",
+    "start:server-3": "node scripts/start-service.js 3",
+    "start:frontend": "npm run dev --workspace=frontend",
+    "stop": "node scripts/kill-ports.js",
+    "load-test": "node scripts/load-test.js",
+    "experiment": "node scripts/run-experiment.js"
+  }
+}
